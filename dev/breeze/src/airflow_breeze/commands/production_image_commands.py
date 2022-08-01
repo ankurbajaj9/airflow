@@ -30,6 +30,7 @@ from airflow_breeze.utils.common_options import (
     option_additional_dev_apt_deps,
     option_additional_dev_apt_env,
     option_additional_extras,
+    option_additional_pip_install_flags,
     option_additional_python_deps,
     option_additional_runtime_apt_command,
     option_additional_runtime_apt_deps,
@@ -143,7 +144,6 @@ PRODUCTION_IMAGE_TOOLS_PARAMETERS = {
             "name": "Customization options (for specific customization needs)",
             "options": [
                 "--install-packages-from-context",
-                "--airflow-is-in-context",
                 "--cleanup-context",
                 "--disable-mysql-client-installation",
                 "--disable-mssql-client-installation",
@@ -267,13 +267,9 @@ def run_build_in_parallel(
 )
 @option_install_providers_from_sources
 @click.option(
-    '--airflow-is-in-context',
-    help="If set Airflow is installed from docker-context-files only rather than from PyPI or sources.",
-    is_flag=True,
-)
-@click.option(
     '--install-packages-from-context',
-    help='Install wheels from local docker-context-files when building image.',
+    help='Install wheels from local docker-context-files when building image. '
+    'Implies --disable-airflow-repo-cache.',
     is_flag=True,
 )
 @click.option(
@@ -317,6 +313,7 @@ def run_build_in_parallel(
 @option_runtime_apt_command
 @option_runtime_apt_deps
 @option_tag_as_latest
+@option_additional_pip_install_flags
 def build_prod_image(
     verbose: bool,
     dry_run: bool,

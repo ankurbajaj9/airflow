@@ -165,8 +165,7 @@ You can also skip installing airflow and install it from locally provided files 
 
 .. code-block:: bash
 
-  breeze build-prod-image --python 3.7 --additional-extras=trino \
-     --airflow-is-in-context-pypi --install-packages-from-context
+  breeze build-prod-image --python 3.7 --additional-extras=trino --install-packages-from-context
 
 In this case you airflow and all packages (.whl files) should be placed in ``docker-context-files`` folder.
 
@@ -376,6 +375,10 @@ The following build arguments (``--build-arg`` in docker build command) can be u
 | ``DEPENDENCIES_EPOCH_NUMBER``            | ``2``                                    | increasing this number will reinstall    |
 |                                          |                                          | all apt dependencies                     |
 +------------------------------------------+------------------------------------------+------------------------------------------+
+| ``ADDITIONAL_PIP_INSTALL_FLAGS``         |                                          | additional ``pip`` flags passed to the   |
+|                                          |                                          | installation commands (except when       |
+|                                          |                                          | reinstalling ``pip`` itself)             |
++------------------------------------------+------------------------------------------+------------------------------------------+
 | ``PIP_NO_CACHE_DIR``                     | ``true``                                 | if true, then no pip cache will be       |
 |                                          |                                          | stored                                   |
 +------------------------------------------+------------------------------------------+------------------------------------------+
@@ -474,7 +477,7 @@ The following build arguments (``--build-arg`` in docker build command) can be u
 | ``ADDITIONAL_RUNTIME_APT_ENV``           |                                          | Additional env variables defined         |
 |                                          |                                          | when installing runtime deps             |
 +------------------------------------------+------------------------------------------+------------------------------------------+
-| ``AIRFLOW_PIP_VERSION``                  | ``22.1.2``                               | PIP version used.                        |
+| ``AIRFLOW_PIP_VERSION``                  | ``22.2.1``                               | PIP version used.                        |
 +------------------------------------------+------------------------------------------+------------------------------------------+
 | ``PIP_PROGRESS_BAR``                     | ``on``                                   | Progress bar for PIP installation        |
 +------------------------------------------+------------------------------------------+------------------------------------------+

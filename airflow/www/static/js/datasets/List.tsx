@@ -18,15 +18,26 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Box, Code, Heading } from '@chakra-ui/react';
+import {
+  Box,
+  Heading,
+  Flex,
+  Button,
+  Link,
+} from '@chakra-ui/react';
+import { snakeCase } from 'lodash';
+import type { Row, SortingRule } from 'react-table';
 
 import { useDatasets } from 'src/api';
-import Table from 'src/components/Table';
-import Time from 'src/components/Time';
-import { snakeCase } from 'lodash';
-import type { SortingRule } from 'react-table';
+import { Table, TimeCell, CodeCell } from 'src/components/Table';
+import type { API } from 'src/types';
+import { MdOutlineAccountTree } from 'react-icons/md';
 
-const DatasetsList = () => {
+interface Props {
+  onSelect: (datasetId: string) => void;
+}
+
+const DatasetsList = ({ onSelect }: Props) => {
   const limit = 25;
   const [offset, setOffset] = useState(0);
   const [sortBy, setSortBy] = useState<SortingRule<object>[]>([]);
@@ -46,34 +57,47 @@ const DatasetsList = () => {
         Header: 'Extra',
         accessor: 'extra',
         disableSortBy: true,
+        Cell: CodeCell,
       },
       {
         Header: 'Created At',
         accessor: 'createdAt',
+        Cell: TimeCell,
       },
       {
         Header: 'Updated At',
         accessor: 'updatedAt',
+        Cell: TimeCell,
       },
     ],
     [],
   );
 
   const data = useMemo(
-    () => datasets.map((d) => ({
-      ...d,
-      extra: <Code>{d.extra}</Code>,
-      createdAt: <Time dateTime={d.createdAt} />,
-      updatedAt: <Time dateTime={d.updatedAt} />,
-    })),
+    () => datasets,
     [datasets],
   );
 
+  const onDatasetSelect = (row: Row<API.Dataset>) => {
+    if (row.original.id) onSelect(row.original.id.toString());
+  };
+
   return (
-    <Box>
-      <Heading mt={3} mb={2} fontWeight="normal">
-        Datasets
-      </Heading>
+    <Box maxWidth="1500px">
+      <Flex justifyContent="space-between" alignItems="center">
+        <Heading mt={3} mb={2} fontWeight="normal" title="View Dag-Dataset Dependencies">
+          Datasets
+        </Heading>
+        <Button
+          as={Link}
+          variant="outline"
+          colorScheme="blue"
+          href="/dag-dependencies"
+          leftIcon={<MdOutlineAccountTree />}
+        >
+          Graph
+        </Button>
+      </Flex>
       <Box borderWidth={1}>
         <Table
           data={data}
@@ -85,7 +109,11 @@ const DatasetsList = () => {
             totalEntries,
           }}
           pageSize={limit}
-          setSortBy={setSortBy}
+          manualSort={{
+            setSortBy,
+            sortBy,
+          }}
+          onRowClicked={onDatasetSelect}
         />
       </Box>
     </Box>

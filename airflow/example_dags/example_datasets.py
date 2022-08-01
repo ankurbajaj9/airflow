@@ -21,19 +21,20 @@ Notes on usage:
 
 Turn on all the dags.
 
-DAG dag1 should run because it's on a schedule.
+DAG example_dataset_dag1 should run because it's on a schedule.
 
-After dag1 runs, dag3 should be triggered immediately because its only
-dataset dependency is managed by dag1.
+After example_dataset_dag1 runs, example_dataset_dag3_req_dag1 should be triggered immediately
+because its only dataset dependency is managed by example_dataset_dag1.
 
-No other dags should be triggered.  Note that even though dag4 depends on
-the dataset in dag1, it will not be triggered until dag2 runs (and dag2 is
-left with no schedule so that we can trigger it manually).
+No other dags should be triggered.  Note that even though example_dataset_dag4_req_dag1_dag2 depends on
+the dataset in example_dataset_dag1, it will not be triggered until example_dataset_dag2 runs
+(and example_dataset_dag2 is left with no schedule so that we can trigger it manually).
 
-Next, trigger dag2.  After dag2 finishes, dag4 should run.
+Next, trigger example_dataset_dag2.  After example_dataset_dag2 finishes,
+example_dataset_dag4_req_dag1_dag2 should run.
 
-Dags 5 and 6 should not run because they depend on datasets that never get updated.
-
+Dags example_dataset_dag5_req_dag1_D and example_dataset_dag6_req_DD should not run because they depend on
+datasets that never get updated.
 """
 from datetime import datetime
 
@@ -46,7 +47,7 @@ dag1_dataset = Dataset('s3://dag1/output_1.txt', extra={'hi': 'bye'})
 dag2_dataset = Dataset('s3://dag2/output_1.txt', extra={'hi': 'bye'})
 
 dag1 = DAG(
-    dag_id='dag1',
+    dag_id='example_dataset_dag1',
     catchup=False,
     start_date=datetime(2020, 1, 1),
     schedule_interval='@daily',
@@ -58,7 +59,7 @@ BashOperator(outlets=[dag1_dataset], task_id='upstream_task_1', bash_command="sl
 # [END task_outlet]
 
 with DAG(
-    dag_id='dag2',
+    dag_id='example_dataset_dag2',
     catchup=False,
     start_date=datetime(2020, 1, 1),
     schedule_interval=None,
@@ -72,7 +73,7 @@ with DAG(
 
 # [START dag_dep]
 dag3 = DAG(
-    dag_id='dag3',
+    dag_id='example_dataset_dag3_req_dag1',
     catchup=False,
     start_date=datetime(2020, 1, 1),
     schedule_on=[dag1_dataset],
@@ -88,7 +89,7 @@ BashOperator(
 )
 
 with DAG(
-    dag_id='dag4',
+    dag_id='example_dataset_dag4_req_dag1_dag2',
     catchup=False,
     start_date=datetime(2020, 1, 1),
     schedule_on=[dag1_dataset, dag2_dataset],
@@ -101,7 +102,7 @@ with DAG(
     )
 
 with DAG(
-    dag_id='dag5',
+    dag_id='example_dataset_dag5_req_dag1_D',
     catchup=False,
     start_date=datetime(2020, 1, 1),
     schedule_on=[
@@ -117,7 +118,7 @@ with DAG(
     )
 
 with DAG(
-    dag_id='dag6',
+    dag_id='example_dataset_dag6_req_DD',
     catchup=False,
     start_date=datetime(2020, 1, 1),
     schedule_on=[
