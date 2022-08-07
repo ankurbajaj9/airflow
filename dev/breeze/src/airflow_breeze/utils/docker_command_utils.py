@@ -271,13 +271,24 @@ def check_docker_compose_version(verbose: bool):
     """
     version_pattern = re.compile(r'(\d+)\.(\d+)\.(\d+)')
     docker_compose_version_command = ["docker-compose", "--version"]
-    docker_compose_version_result = run_command(
-        docker_compose_version_command,
-        verbose=verbose,
-        no_output_dump_on_exception=True,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        docker_compose_version_result = run_command(
+            docker_compose_version_command,
+            verbose=verbose,
+            no_output_dump_on_exception=True,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        docker_compose_version_command = ["docker", "compose", "version"]
+        docker_compose_version_result = run_command(
+            docker_compose_version_command,
+            verbose=verbose,
+            no_output_dump_on_exception=True,
+            capture_output=True,
+            text=True,
+        )
+
     if docker_compose_version_result.returncode == 0:
         docker_compose_version = docker_compose_version_result.stdout
         version_extracted = version_pattern.search(docker_compose_version)
@@ -433,7 +444,7 @@ def prepare_base_build_command(image_params: CommonBuildParams, verbose: bool) -
                 "--builder",
                 image_params.builder,
                 "--progress=tty",
-                "--push" if image_params.push_image else "--load",
+                "--push" if image_params.push else "--load",
             ]
         )
     else:
@@ -688,7 +699,7 @@ def warm_up_docker_builder(image_params: CommonBuildParams, verbose: bool, dry_r
     get_console().print(f"[info]Warming up the {image_params.builder} builder for syntax: {docker_syntax}")
     warm_up_image_param = deepcopy(image_params)
     warm_up_image_param.image_tag = "warmup"
-    warm_up_image_param.push_image = False
+    warm_up_image_param.push = False
     build_command = prepare_base_build_command(image_params=warm_up_image_param, verbose=verbose)
     warm_up_command = []
     warm_up_command.extend(["docker"])

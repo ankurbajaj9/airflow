@@ -21,6 +21,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    ClassVar,
     Collection,
     Dict,
     Generic,
@@ -258,6 +259,8 @@ class _TaskDecorator(Generic[FParams, FReturn, OperatorSubclass]):
     kwargs: Dict[str, Any] = attr.ib(factory=dict)
 
     decorator_name: str = attr.ib(repr=False, default="task")
+
+    _airflow_is_task_decorator: ClassVar[bool] = True
 
     @multiple_outputs.default
     def _infer_multiple_outputs(self):
@@ -533,6 +536,9 @@ class Task(Generic[FParams, FReturn]):
     def expand_kwargs(self, kwargs: XComArg, *, strict: bool = True) -> XComArg:
         ...
 
+    def override(self, **kwargs: Any) -> "Task[FParams, FReturn]":
+        ...
+
 
 class TaskDecorator(Protocol):
     """Type declaration for ``task_decorator_factory`` return type."""
@@ -552,6 +558,9 @@ class TaskDecorator(Protocol):
         **kwargs: Any,
     ) -> Callable[[Callable[FParams, FReturn]], Task[FParams, FReturn]]:
         """For the decorator factory ``@task()`` case."""
+
+    def override(self, **kwargs: Any) -> "Task[FParams, FReturn]":
+        ...
 
 
 def task_decorator_factory(
